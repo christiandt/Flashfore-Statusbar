@@ -22,11 +22,14 @@ class ProgressReader:
         # request control
         printer_socket.send('~M601 S1\r\n'.encode())
         printer_socket.recv(1024)
-        # request info
+        # request progress
         printer_socket.send('~M27\r\n'.encode())
         data = printer_socket.recv(1024)
-        printer_socket.close()
         info_result = data.decode()
+        # release control
+        printer_socket.send('~M602\r\n'.encode())
+        printer_socket.recv(1024)
+        printer_socket.close()
         # structure response
         regex_groups = re.search('([0-9].*)\/([0-9].*?)\\r', info_result).groups()
         printed, total = regex_groups
