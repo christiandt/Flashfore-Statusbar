@@ -10,7 +10,7 @@ class Preferences:
 
     def write_config(self):
         with open(self.filename, 'wb') as f:
-            f.write(json.dumps(self.configuration))
+            f.write(bytes(json.dumps(self.configuration), 'utf-8'))
 
     def read_config(self):
         with open(self.filename, 'r') as f:
