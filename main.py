@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
 from progressreader import ProgressReader
+from preferences import Preferences
 import time
 import sys
 import os
 
-env_printer_ip = os.getenv("FLASHFORGE_IP", "10.0.0.111")
-env_printer_port = os.getenv("FLASHFORGE_PORT", 8899)
-progress_reader = ProgressReader(env_printer_ip, env_printer_port)
+prefs = Preferences()
+port = int(os.getenv('FLASHFOREGE_PORT', prefs.port))
+progress_reader = ProgressReader(prefs.ip, port)
 
 try:
     SLEEP_TIME = float(sys.argv[1])

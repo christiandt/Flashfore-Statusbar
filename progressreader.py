@@ -7,7 +7,7 @@ import re
 
 class ProgressReader:
 
-    def __init__(self, ip="10.0.0.111", port=8899):
+    def __init__(self, ip, port):
         self.printer_address = (ip, port)
         self.progress = 0
 
