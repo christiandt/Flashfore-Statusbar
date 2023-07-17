@@ -8,7 +8,7 @@ import re
 class ProgressReader:
 
     def __init__(self, ip="10.0.0.111", port=8899):
-        self.printer_address = {'ip': ip, 'port': port}
+        self.printer_address = (ip, port)
         self.progress = 0
 
     def get_progress(self):
@@ -18,12 +18,19 @@ class ProgressReader:
         return self.printer_address
 
     def update_progress(self):
-        self._send_and_receive(self.printer_address, '~M601 S1\r\n')
-        info_result = self._send_and_receive(self.printer_address, '~M27\r\n')
+        printer_socket = socket.create_connection(address=self.printer_address, timeout=5)
+        # request control
+        printer_socket.send('~M601 S1\r\n'.encode())
+        printer_socket.recv(1024)
+        # request info
+        printer_socket.send('~M27\r\n'.encode())
+        data = printer_socket.recv(1024)
+        printer_socket.close()
+        info_result = data.decode()
+        # structure response
         regex_groups = re.search('([0-9].*)\/([0-9].*?)\\r', info_result).groups()
-        printed = int(regex_groups[0])
-        total = int(regex_groups[1])
-        self.progress = 0 if total == 0 else int(float(printed) / total * 100)
+        printed, total = regex_groups
+        self.progress = 0 if total == 0 else int(float(printed) / int(total) * 100)
 
     def print_progress(self):
         bar_len = 100
@@ -31,13 +38,3 @@ class ProgressReader:
         bar = '█' * filled_len + '-' * (bar_len - filled_len)
         sys.stdout.write(f"[{bar}] {self.progress}%\r")
         sys.stdout.flush()
-
-    @staticmethod
-    def _send_and_receive(printer_address, message_data):
-        printer_socket = socket.socket()
-        printer_socket.settimeout(5)
-        printer_socket.connect((printer_address['ip'], printer_address['port']))
-        printer_socket.send(message_data.encode())
-        data = printer_socket.recv(1024)
-        printer_socket.close()
-        return data.decode()
